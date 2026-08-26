@@ -35,3 +35,19 @@ Complete.
 ## Concerns
 
 - None blocking. The client intentionally does not retry; callers can use `kind` and `retryAfterSeconds` for policy later.
+
+## Review Fix Round 1
+
+- Added a regression proving native `AbortSignal.timeout()` rejection name `TimeoutError` maps to `kind: "timeout"`; RED failed with `kind: "network"` before the fix.
+- Minimally mapped both DOMException names, `AbortError` and `TimeoutError`, through the existing timeout branch.
+- Added malformed `Retry-After: later` coverage; invalid values remain omitted.
+- Assessed optional `status` and `retryAfterSeconds` parameter properties. Left them unchanged: removing own properties when undefined requires extra conditional assignment and changes runtime object shape without improving the public optional interface.
+
+### Fix Evidence
+
+- RED — `npm test -- tests/mxroute.test.ts`: 1 failed, 14 passed; `TimeoutError` received `kind: "network"` instead of `"timeout"`.
+- GREEN — `npm test -- tests/mxroute.test.ts`: 15 passed.
+- Full suite — `npm test`: 53 passed across 5 files.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed.
+- `git diff --check`: passed.

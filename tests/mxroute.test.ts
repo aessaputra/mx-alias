@@ -148,6 +148,17 @@ describe("MXroute error mapping", () => {
     expect(error).not.toHaveProperty("retryAfterSeconds", 0);
   });
 
+  it("omits a malformed Retry-After delay", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      jsonResponse({ success: false }, 429, { "Retry-After": "later" }),
+    );
+
+    const error = await listDomains().catch((caught: unknown) => caught);
+
+    expect(error).toMatchObject({ kind: "rate_limited", status: 429 });
+    expect(error).not.toHaveProperty("retryAfterSeconds", expect.any(Number));
+  });
+
   it("maps malformed success JSON without exposing its raw body", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(`not-json ${API_KEY}`, { status: 200 }),
@@ -173,6 +184,17 @@ describe("MXroute error mapping", () => {
   it("maps AbortError to a timeout without exposing its message", async () => {
     vi.spyOn(globalThis, "fetch").mockRejectedValue(
       new DOMException(`timed out ${API_KEY}`, "AbortError"),
+    );
+
+    const error = await listDomains().catch((caught: unknown) => caught);
+
+    expect(error).toMatchObject({ kind: "timeout" });
+    expect((error as Error).message).not.toContain(API_KEY);
+  });
+
+  it("maps TimeoutError to a timeout without exposing its message", async () => {
+    vi.spyOn(globalThis, "fetch").mockRejectedValue(
+      new DOMException(`timed out ${API_KEY}`, "TimeoutError"),
     );
 
     const error = await listDomains().catch((caught: unknown) => caught);

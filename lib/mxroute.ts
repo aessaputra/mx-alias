@@ -71,7 +71,10 @@ async function request<T>(
       },
     });
   } catch (error) {
-    if (error instanceof DOMException && error.name === "AbortError") {
+    if (
+      error instanceof DOMException &&
+      (error.name === "AbortError" || error.name === "TimeoutError")
+    ) {
       throw new MxrouteError("timeout", "MXroute request timed out");
     }
     throw new MxrouteError("network", "MXroute request failed");
