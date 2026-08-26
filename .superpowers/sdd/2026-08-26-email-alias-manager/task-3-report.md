@@ -23,7 +23,7 @@ During self-review, added expiry-boundary and non-canonical base64url tests. Bot
 Implemented the minimum primitives with Node `crypto` and the existing `loadConfig()` interface:
 
 - `lib/session.ts`: 12-hour versioned session payload, base64url encoding, HMAC-SHA256 signing, strict token parsing, constant-time equal-length signature comparison, expiry checks.
-- `lib/security.ts`: constant-time equal-length string comparison and exact `Origin` host validation against the first `X-Forwarded-Host` value or `Host`.
+- `lib/security.ts`: constant-time equal-length string comparison and exact `Origin` host validation against the first `X-Forwarded-Host` value whenever that header is present, using `Host` only when it is absent.
 
 No dependencies added. Session secrets remain inside HMAC operations and are never returned or logged.
 
@@ -69,3 +69,37 @@ Created:
 ## Concerns
 
 None. `loadConfig()` intentionally requires the full application environment, so session callers and tests must provide all required configuration values.
+
+## Review round 1
+
+Added regression coverage proving that an empty or whitespace-only first `X-Forwarded-Host` value is rejected rather than falling back to `Host`. Updated `assertSameOrigin` to use `Host` only when `X-Forwarded-Host` is absent.
+
+### RED evidence
+
+```text
+npm test -- tests/security.test.ts
+Test Files 1 failed (1)
+Tests 2 failed | 7 passed (9)
+```
+
+Both new tests failed because `assertSameOrigin` accepted the matching `Host` after an empty forwarded value.
+
+### GREEN evidence
+
+```text
+npm test -- tests/security.test.ts
+Test Files 1 passed (1)
+Tests 9 passed (9)
+
+npm test
+Test Files 4 passed (4)
+Tests 38 passed (38)
+
+npm run typecheck
+> tsc --noEmit
+exit 0
+
+npm run lint
+> eslint .
+exit 0
+```

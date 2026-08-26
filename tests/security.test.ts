@@ -27,6 +27,30 @@ describe("assertSameOrigin", () => {
     ).not.toThrow();
   });
 
+  it("rejects an empty first X-Forwarded-Host value", () => {
+    expect(() =>
+      assertSameOrigin(
+        new Headers({
+          host: "admin.example.test",
+          origin: "https://admin.example.test",
+          "x-forwarded-host": ", proxy.internal",
+        }),
+      ),
+    ).toThrow(/origin/i);
+  });
+
+  it("rejects a whitespace-only first X-Forwarded-Host value", () => {
+    expect(() =>
+      assertSameOrigin(
+        new Headers({
+          host: "admin.example.test",
+          origin: "https://admin.example.test",
+          "x-forwarded-host": "   , proxy.internal",
+        }),
+      ),
+    ).toThrow(/origin/i);
+  });
+
   it("rejects a foreign origin", () => {
     expect(() =>
       assertSameOrigin(new Headers({ host: "admin.example.test", origin: "https://evil.example" })),

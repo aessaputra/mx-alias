@@ -8,7 +8,8 @@ export function safeEqual(left: string, right: string): boolean {
 
 export function assertSameOrigin(headers: Headers): void {
   const origin = headers.get("origin");
-  const host = headers.get("x-forwarded-host")?.split(",", 1)[0].trim() || headers.get("host");
+  const forwardedHost = headers.get("x-forwarded-host");
+  const host = forwardedHost === null ? headers.get("host") : forwardedHost.split(",", 1)[0].trim();
 
   let originHost: string | undefined;
   try {
