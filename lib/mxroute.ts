@@ -1,7 +1,7 @@
 import { loadConfig } from "@/lib/config";
 import type { Forwarder, MxrouteErrorKind } from "@/lib/types";
 
-const BASE_URL = "https://api.mxroute.com";
+const BASE_URL = process.env.MXROUTE_BASE_URL || "https://api.mxroute.com";
 
 export class MxrouteError extends Error {
   override name = "MxrouteError";
