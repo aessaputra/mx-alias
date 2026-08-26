@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import type { ActionState } from "@/app/action-handlers";
 import { createAliasAction, generateAliasAction } from "@/app/actions";
@@ -17,7 +18,16 @@ export function AliasForm({ domains, selectedDomain }: AliasFormProps) {
   const [domain, setDomain] = useState(selectedDomain ?? domains[0] ?? "");
   const [alias, setAlias] = useState("");
   const [generateError, setGenerateError] = useState("");
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const address = alias && domain ? `${alias}@${domain}` : `alias@${domain || "domain"}`;
+
+  function handleDomainChange(value: string) {
+    setDomain(value);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("domain", value);
+    router.push(`/?${params.toString()}`);
+  }
 
   async function generate() {
     setGenerateError("");
@@ -38,7 +48,7 @@ export function AliasForm({ domains, selectedDomain }: AliasFormProps) {
         <form action={action} className="alias-form">
           <div className="field">
             <label htmlFor="domain">Domain</label>
-            <select id="domain" name="domain" value={domain} onChange={(event) => setDomain(event.target.value)}>
+            <select id="domain" name="domain" value={domain} onChange={(event) => handleDomainChange(event.target.value)}>
               {domains.map((item) => <option key={item}>{item}</option>)}
             </select>
           </div>
