@@ -6,7 +6,7 @@
 
 **Architecture:** One Next.js App Router application owns the UI, signed-cookie authentication, validation, and a thin MXroute HTTP client. MXroute remains the only source of truth; the application stores no persistent data and ships first as a standalone Docker image.
 
-**Tech Stack:** Next.js 16.3.3, React 19.2.8, TypeScript 7.0.2, Node.js 24 LTS, native CSS, Node.js `crypto`, Vitest 4.1.11, Playwright 1.62.1.
+**Tech Stack:** Next.js 16.3.3, React 19.2.8, TypeScript 5.9.3, Node.js 24 LTS, native CSS, Node.js `crypto`, Vitest 4.1.11, Playwright 1.62.1.
 
 **Spec:** `docs/superpowers/specs/2026-08-26-email-alias-manager-design.md`
 
@@ -96,7 +96,7 @@
     "@types/react-dom": "19.2.3",
     "eslint": "10.9.1",
     "eslint-config-next": "16.3.3",
-    "typescript": "7.0.2",
+    "typescript": "5.9.3",
     "vitest": "4.1.11"
   }
 }
