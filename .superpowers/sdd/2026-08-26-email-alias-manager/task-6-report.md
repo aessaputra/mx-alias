@@ -39,3 +39,23 @@ No credentials are exposed to client code. User-controlled alias, destination, a
 ## Concerns
 
 None blocking. Full dashboard controls and presentation remain intentionally deferred to Task 7.
+
+## Review Fix Round 1
+
+- Protected alias generation with the same session verification used by mutations; unauthenticated generation now returns `Authentication required`.
+- Added login-specific SHA-256 digest comparison. Every submitted shape reaches one fixed-length `timingSafeEqual` call while failures retain `Invalid credentials`; `safeEqual` remains unchanged.
+- Moved dependency-injected handlers and dependency/result types to `app/action-handlers.ts`; `app/actions.ts` now exports only the five intended async Server Action wrappers.
+- Added behavioral regressions for unauthenticated generation and missing, malformed, shorter, and longer login submissions. The comparison tests assert execution rather than timing thresholds.
+
+### Exact verification evidence
+
+- `npm test -- tests/actions.test.ts`: passed; 1 file, 13 tests.
+- `npm test`: passed; 7 files, 68 tests.
+- `npm run typecheck`: passed; `tsc --noEmit` exited 0.
+- `npm run lint`: passed; `eslint .` exited 0.
+- `npm run build`: passed with Next.js 16.3.3; compiled successfully, TypeScript completed, `/` dynamic and `/login` static. This also verifies that the `"use server"` module exports are valid Server Actions.
+- `git diff --check`: passed.
+
+### Review concerns
+
+None blocking.

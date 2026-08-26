@@ -3,9 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 import {
   createAlias,
   deleteAlias,
+  generateAlias,
   login,
   type ActionDependencies,
-} from "@/app/actions";
+} from "@/app/action-handlers";
 
 const form = (values: Record<string, string>) => {
   const data = new FormData();
@@ -15,6 +16,7 @@ const form = (values: Record<string, string>) => {
 
 const deps = (overrides: Partial<ActionDependencies> = {}): ActionDependencies => ({
   adminPassword: "correct horse",
+  comparePassword: (submitted, expected) => submitted === expected,
   createSessionToken: () => "signed-token",
   verifySessionToken: (token) => token === "valid",
   assertSameOrigin: () => undefined,
@@ -31,6 +33,21 @@ describe("action core handlers", () => {
 
   it("creates a token for valid login", async () => {
     expect(await login(form({ password: "correct horse" }), deps())).toEqual({ ok: true, token: "signed-token" });
+  });
+
+  it.each([
+    ["missing", form({})],
+    ["malformed", (() => { const data = new FormData(); data.append("password", new Blob(["wrong"])); return data; })()],
+    ["short", form({ password: "x" })],
+    ["long", form({ password: "wrong password value" })],
+  ])("compares every %s login submission before returning generic failure", async (_shape, data) => {
+    const comparePassword = vi.fn(() => false);
+    expect(await login(data, deps({ comparePassword }))).toEqual({ ok: false, message: "Invalid credentials" });
+    expect(comparePassword).toHaveBeenCalledOnce();
+  });
+
+  it("rejects unauthenticated alias generation", () => {
+    expect(generateAlias("bad", deps())).toEqual({ ok: false, message: "Authentication required" });
   });
 
   it.each([createAlias, deleteAlias])("rejects unauthenticated mutations", async (handler) => {

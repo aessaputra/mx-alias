@@ -2,7 +2,8 @@
 
 import { useActionState } from "react";
 
-import { loginAction, type ActionState } from "@/app/actions";
+import type { ActionState } from "@/app/action-handlers";
+import { loginAction } from "@/app/actions";
 
 const initialState: ActionState = { ok: false, message: "" };
 
