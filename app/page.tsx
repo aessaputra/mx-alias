@@ -35,7 +35,7 @@ export default async function Home({ searchParams }: PageProps) {
         <AliasForm domains={domains} selectedDomain={selectedDomain} />
         {selectedDomain ? <ForwarderList forwarders={forwarders} domain={selectedDomain} /> : (
           <section className="list-panel" aria-labelledby="list-title">
-            <div className="section-heading"><p className="kicker">Current routing</p><h2 id="list-title">Forwarders</h2></div>
+            <div className="section-heading"><p className="kicker">02 / Current routing</p><h2 id="list-title">Forwarders</h2></div>
             <div className="empty-state"><p>No MXroute domains are available.</p><p>Check the server configuration, then refresh.</p></div>
           </section>
         )}

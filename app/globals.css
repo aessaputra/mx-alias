@@ -538,4 +538,46 @@ dialog code {
   max-width: 340px;
 }
 
+/* Industrial print system */
+body {
+  overflow-x: hidden;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+body::before {
+  position: fixed; inset: 0; z-index: 9999; pointer-events: none; content: ""; opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
+}
+h1, h2, h3, .brand { font-weight: 900; letter-spacing: -0.05em; line-height: 0.9; text-transform: uppercase; }
+.brand { font-size: clamp(1.25rem, 2vw, 1.75rem); }
+h2 { font-size: clamp(2rem, 4vw, 4.5rem); }
+.site-header nav, .kicker, .field label, button, .address-preview, .list-heading > p { font-family: var(--font-mono); }
+.site-header nav, .field label, button { letter-spacing: 0.05em; text-transform: uppercase; }
+.site-header nav { font-size: 0.75rem; }
+.dashboard { min-height: calc(100dvh - 72px); }
+
+.login-page {
+  min-height: 100dvh; display: grid; grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  max-width: var(--max); margin: 0 auto; padding: 0 1.5rem;
+}
+.login-identity, .login-access { padding: 2rem; }
+.login-identity {
+  display: flex; flex-direction: column; justify-content: space-between; padding-left: 0;
+  border-right: 1px solid var(--divider);
+}
+.login-identity h1 { font-size: clamp(5rem, 13vw, 12rem); }
+.login-access { display: flex; flex-direction: column; justify-content: center; padding-right: 0; }
+
+@media (max-width: 480px) {
+  .site-header { height: auto; min-height: 72px; padding-block: 0.75rem; flex-wrap: wrap; }
+  .site-header nav { width: 100%; justify-content: space-between; gap: 0.5rem; }
+}
+
+@media (max-width: 768px) {
+  .login-page { grid-template-columns: 1fr; padding: 0 1rem; }
+  .login-identity {
+    min-height: 42dvh; padding: 1.5rem 0; border-right: 0; border-bottom: 1px solid var(--divider);
+  }
+  .login-access { padding: 1.5rem 0; }
+}
+
 /* Error page */

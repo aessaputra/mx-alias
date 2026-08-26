@@ -39,7 +39,7 @@ export function AliasForm({ domains, selectedDomain }: AliasFormProps) {
   return (
     <section className="create-panel" id="create" aria-labelledby="create-title">
       <div className="section-heading">
-        <p className="kicker">New forwarder</p>
+        <p className="kicker">01 / New forwarder</p>
         <h2 id="create-title">Create an alias</h2>
         <p>Route a new address to one destination.</p>
       </div>

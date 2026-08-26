@@ -18,6 +18,19 @@ test.describe("alias lifecycle", () => {
     await expect(page.getByRole("heading", { name: "Create an alias" })).toBeVisible();
   });
 
+  test("industrial layout keeps its structure at 320px and 200% text", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.addStyleTag({ content: "html { font-size: 200%; }" });
+    await login(page);
+
+    await expect(page.getByText("01 / New forwarder")).toBeVisible();
+    await expect(page.getByText("02 / Current routing")).toBeVisible();
+    await expect(page.locator("body")).toHaveCSS("overflow-x", "hidden");
+    await expect(page.locator("body")).toHaveCSS("font-family", /Geist/);
+    await expect(page.locator(".site-header")).toHaveCSS("flex-wrap", "wrap");
+    expect(await page.locator("body").evaluate((body) => body.scrollWidth)).toBe(320);
+  });
+
   test("domain is visible and selectable", async ({ page }) => {
     await login(page);
     const select = page.locator("select#domain");

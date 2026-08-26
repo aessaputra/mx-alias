@@ -38,7 +38,7 @@ export function ForwarderList({ forwarders, domain }: Readonly<{ forwarders: For
     <section className="list-panel" aria-labelledby="list-title">
       <div className="list-heading">
         <div>
-          <p className="kicker">Current routing</p>
+          <p className="kicker">02 / Current routing</p>
           <h2 id="list-title">Forwarders</h2>
         </div>
         <p><strong>{forwarders.length}</strong> {forwarders.length === 1 ? "alias" : "aliases"}</p>

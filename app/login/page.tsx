@@ -12,8 +12,16 @@ export default function LoginPage() {
 
   return (
     <main className="login-page">
-      <h1>MX Alias</h1>
-      <form action={action} className="login-form">
+      <header className="login-identity">
+        <p className="kicker">MX routing control</p>
+        <h1>MX<br />Alias</h1>
+      </header>
+      <section className="login-access" aria-labelledby="access-title">
+        <div className="section-heading">
+          <p className="kicker">01 / Authorized access</p>
+          <h2 id="access-title">Sign in</h2>
+        </div>
+        <form action={action} className="login-form">
         <div className="field">
           <label htmlFor="password">Admin password</label>
           <input id="password" name="password" type="password" required autoComplete="current-password" />
@@ -22,7 +30,8 @@ export default function LoginPage() {
           {pending ? "Signing in..." : "Sign in"}
         </button>
         {!state.ok && state.message ? <p className="field-error" role="alert">{state.message}</p> : null}
-      </form>
+        </form>
+      </section>
     </main>
   );
 }
