@@ -8,3 +8,10 @@ coverage/
 !.env.example
 npm-debug.log*
 .DS_Store
+test-results/
+playwright-report/
+.agents/
+.claude/
+AGENTS.md
+CLAUDE.md
+skills-lock.json
