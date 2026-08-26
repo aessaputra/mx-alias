@@ -56,7 +56,7 @@
 - Create: `next.config.ts`
 - Create: `next-env.d.ts`
 - Create: `eslint.config.mjs`
-- Create: `vitest.config.ts`
+- Create: `vitest.config.mts`
 - Create: `app/layout.tsx`
 - Create: `app/page.tsx`
 - Create: `app/globals.css`
@@ -94,7 +94,7 @@
     "@types/node": "26.3.0",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
-    "eslint": "10.9.1",
+    "eslint": "9.39.5",
     "eslint-config-next": "16.3.3",
     "typescript": "5.9.3",
     "vitest": "4.1.11"
@@ -107,7 +107,7 @@ Expected: lockfile created with no unresolved peer dependency error.
 
 - [ ] **Step 2: Add minimal framework configuration**
 
-Set `output: "standalone"` in `next.config.ts`, strict TypeScript in `tsconfig.json`, flat Next.js ESLint configuration, and Vitest with `environment: "node"` and alias `@` mapped to the repository root.
+Set `output: "standalone"` in `next.config.ts`, strict TypeScript in `tsconfig.json`, flat Next.js ESLint configuration, and `vitest.config.mts` with `environment: "node"` and alias `@` mapped to the repository root.
 
 - [ ] **Step 3: Add the initial shell**
 
@@ -121,7 +121,7 @@ Expected: all commands exit 0; Vitest reports no test files without failing.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add package.json package-lock.json tsconfig.json next.config.ts next-env.d.ts eslint.config.mjs vitest.config.ts app .gitignore .env.example
+git add package.json package-lock.json tsconfig.json next.config.ts next-env.d.ts eslint.config.mjs vitest.config.mts app .gitignore .env.example
 git commit -m "chore: bootstrap Next.js application"
 ```
 
