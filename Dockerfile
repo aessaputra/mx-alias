@@ -20,7 +20,7 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
-RUN npm run build
+RUN npm run build && npm prune --omit=dev
 
 # ---------------------------------------------------------------------------
 # Stage 3 — runner: minimal production image

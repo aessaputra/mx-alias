@@ -1,0 +1,16 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      MXROUTE_SERVER: ${MXROUTE_SERVER}
+      MXROUTE_USERNAME: ${MXROUTE_USERNAME}
+      MXROUTE_API_KEY: ${MXROUTE_API_KEY}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      SESSION_SECRET: ${SESSION_SECRET}
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL

@@ -13,7 +13,7 @@ export default function Error({
   return (
     <>
       <header className="site-header">
-        <Link className="brand" href="/">Alias Manager</Link>
+        <Link className="brand" href="/">MX Alias</Link>
       </header>
       <main className="dashboard error-page">
         <section className="error-panel">

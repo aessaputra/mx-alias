@@ -12,7 +12,7 @@ export default function LoginPage() {
 
   return (
     <main className="login-page">
-      <h1>Email Alias Manager</h1>
+      <h1>MX Alias</h1>
       <form action={action} className="login-form">
         <div className="field">
           <label htmlFor="password">Admin password</label>

@@ -18,7 +18,7 @@ import { createForwarder, deleteForwarder, listDomains } from "@/lib/mxroute";
 import { assertSameOrigin } from "@/lib/security";
 import { createSessionToken, verifySessionToken } from "@/lib/session";
 
-const SESSION_COOKIE = "email_alias_session";
+const SESSION_COOKIE = "mx_alias_session";
 
 const dependencies = (): ActionDependencies => ({
   adminPassword: loadConfig().adminPassword,

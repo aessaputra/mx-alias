@@ -2,7 +2,7 @@ export default function Loading() {
   return (
     <>
       <header className="site-header">
-        <span className="brand">Alias Manager</span>
+        <span className="brand">MX Alias</span>
         <div className="header-skeleton" aria-hidden="true" />
       </header>
       <main className="dashboard">

@@ -143,5 +143,3 @@ export function deleteForwarder(domain: string, alias: string): Promise<void> {
     { method: "DELETE" },
   );
 }
-
-export type { Forwarder } from "@/lib/types";

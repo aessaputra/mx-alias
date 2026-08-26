@@ -1,25 +1,26 @@
-# Email Alias Manager
+# MX Alias
 
-Self-hosted MXroute email alias manager. Create and delete forwarding aliases from a password-protected web UI. Next.js 16 + React 19, no database — all state lives on MXroute.
+Self-hosted email alias manager for [MXroute](https://mxroute.com/). Create and delete forwarding aliases from a password-protected web UI.
+
+![Node.js](https://img.shields.io/badge/Node.js-24-3c873a?style=flat-square&logo=node.js&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=next.js&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61dafb?style=flat-square&logo=react&logoColor=black)
+
+No database — all aliases live on MXroute's side. The app is a thin, stateless UI over the MXroute API.
 
 ## Prerequisites
 
-- **Node.js 24** (`>=24 <25` — enforced in `package.json` engines)
+- **Node.js 24** (`>=24 <25`, enforced in `package.json` engines)
 - **MXroute account** with API access (server, username, API key)
-- A reverse proxy (Caddy, Nginx, etc.) for HTTPS — the session cookie requires `Secure`.
+- A reverse proxy (Caddy, Nginx, etc.) for HTTPS — the session cookie requires `Secure`
 
-## Environment Variables
+## Getting Started
 
-Generate a session secret:
+Generate a session secret and create `.env`:
 
 ```bash
 openssl rand -hex 32
-```
-
-Create `.env` from the example and fill in your values:
-
-```bash
-cp .env.example .env
+cp .env.example .env   # fill in your values
 ```
 
 | Variable | Description |
@@ -28,7 +29,7 @@ cp .env.example .env
 | `MXROUTE_USERNAME` | MXroute account username |
 | `MXROUTE_API_KEY` | MXroute API key |
 | `ADMIN_PASSWORD` | Password for the web UI login |
-| `SESSION_SECRET` | Random string ≥ 32 chars (use `openssl rand -hex 32`) |
+| `SESSION_SECRET` | Random string ≥ 32 chars |
 
 All five are required. The app refuses to start if any are missing.
 
@@ -36,38 +37,25 @@ All five are required. The app refuses to start if any are missing.
 
 ```bash
 npm ci
-cp .env.example .env   # fill in your values
 npm run dev
 ```
 
-Open http://localhost:3000.
-
-## Testing
-
-```bash
-npm run lint          # ESLint
-npm run typecheck     # TypeScript strict check
-npm test              # 70 unit tests (vitest)
-npm run test:e2e      # 11 e2e tests (Playwright)
-```
-
-Run the full local gate in one shot:
-
-```bash
-npm ci && npm run lint && npm run typecheck && npm test && npm run build && npx playwright test
-```
+Open <http://localhost:3000>.
 
 ## Docker
 
-Build:
+Build and run with Compose:
 
 ```bash
-docker build -t email-alias .
+cp .env.example .env   # fill in your values
+docker compose up -d
 ```
 
-Run:
+Or build and run manually:
 
 ```bash
+docker build -t mx-alias .
+
 docker run -d \
   -p 3000:3000 \
   -e MXROUTE_SERVER=https://api.mxroute.com \
@@ -75,32 +63,37 @@ docker run -d \
   -e MXROUTE_API_KEY=your-api-key \
   -e ADMIN_PASSWORD=your-password \
   -e SESSION_SECRET=$(openssl rand -hex 32) \
-  --name email-alias \
-  email-alias
+  --name mx-alias \
+  mx-alias
 ```
 
-The image exposes port 3000 and runs as a non-root user (`nextjs:1001`). A health check hits `/health` every 30s.
+The image is multi-stage, runs as non-root (`nextjs:1001`), and includes a `/health` endpoint checked every 30s.
 
-## Reverse Proxy / HTTPS
+## Testing
 
-**HTTPS is required.** The session cookie uses `Secure` — the browser will not send it over plain HTTP. Put a reverse proxy (Caddy, Nginx, Traefik) in front that terminates TLS.
+```bash
+npm run lint          # ESLint
+npm run typecheck     # TypeScript strict check
+npm test              # Unit tests (vitest)
+npm run test:e2e      # E2E tests (Playwright)
+```
 
-## No Database
+Full local gate in one shot:
 
-All aliases are managed through MXroute's API. There is no local database. This means:
+```bash
+npm run lint && npm run typecheck && npm test && npm run build
+```
 
-- No data to back up locally.
-- Aliases are the source of truth on MXroute's side.
-- Losing the `.env` file means you recreate it and point at the same MXroute account.
+> [!CAUTION]
+> The Playwright e2e suite uses a mock API. Running it against a real MXroute account will create and delete forwarding aliases. Only test with a disposable domain.
 
-## Live Smoke Tests — Warning
+## Architecture
 
-The Playwright e2e suite uses a mock API. **Real MXroute API calls mutate your account** (create and delete forwarding aliases). Only run against a real account if you understand the consequences and have a disposable domain/alias to test with.
+- `app/` — Next.js App Router: pages, server actions, health endpoint
+- `components/` — Client components (alias form, forwarder list)
+- `lib/` — Business logic: MXroute API client, validation, session handling, security
+- `tests/` — Unit and E2E tests
 
-## Future: Vercel
+Authentication is password-based with HMAC-signed tokens stored in `httpOnly` cookies. Origin validation protects against CSRF. Input is validated server-side before any MXroute API call.
 
-The app uses `next start` standalone output and is compatible with Vercel deployment via the same environment variables. Vercel hosting has not been verified as part of this release.
-
-## License
-
-Private.
+A reverse proxy is required in production — the session cookie uses `Secure` and browsers will not send it over plain HTTP.

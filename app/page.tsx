@@ -12,7 +12,7 @@ import { validateDomain } from "@/lib/validation";
 type PageProps = { searchParams: Promise<{ domain?: string }> };
 
 export default async function Home({ searchParams }: PageProps) {
-  const token = (await cookies()).get("email_alias_session")?.value;
+  const token = (await cookies()).get("mx_alias_session")?.value;
   if (!token || !verifySessionToken(token)) redirect("/login");
 
   const domains = await listDomains();
@@ -24,7 +24,7 @@ export default async function Home({ searchParams }: PageProps) {
   return (
     <>
       <header className="site-header">
-        <Link className="brand" href="/">Alias Manager</Link>
+        <Link className="brand" href="/">MX Alias</Link>
         <nav aria-label="Dashboard controls">
           {selectedDomain ? <code>{selectedDomain}</code> : <span>No domain</span>}
           <a href={selectedDomain ? `/?domain=${encodeURIComponent(selectedDomain)}` : "/"}>Refresh</a>

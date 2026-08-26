@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Email Alias Manager",
+  title: "MX Alias",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
