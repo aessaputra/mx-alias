@@ -1,6 +1,10 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { logoutAction } from "@/app/actions";
+import Link from "next/link";
+import { AliasForm } from "@/components/alias-form";
+import { ForwarderList } from "@/components/forwarder-list";
 import { listDomains, listForwarders } from "@/lib/mxroute";
 import { verifySessionToken } from "@/lib/session";
 import { validateDomain } from "@/lib/validation";
@@ -18,9 +22,24 @@ export default async function Home({ searchParams }: PageProps) {
   const forwarders = selectedDomain ? await listForwarders(selectedDomain) : [];
 
   return (
-    <main>
-      <h1>Email Alias Manager</h1>
-      <p>{domains.length} domains, {forwarders.length} aliases{selectedDomain ? ` for ${selectedDomain}` : ""}</p>
-    </main>
+    <>
+      <header className="site-header">
+        <Link className="brand" href="/">Alias Manager</Link>
+        <nav aria-label="Dashboard controls">
+          {selectedDomain ? <code>{selectedDomain}</code> : <span>No domain</span>}
+          <a href={selectedDomain ? `/?domain=${encodeURIComponent(selectedDomain)}` : "/"}>Refresh</a>
+          <form action={logoutAction}><button className="text-button" type="submit">Log out</button></form>
+        </nav>
+      </header>
+      <main className="dashboard">
+        <AliasForm domains={domains} selectedDomain={selectedDomain} />
+        {selectedDomain ? <ForwarderList forwarders={forwarders} domain={selectedDomain} /> : (
+          <section className="list-panel" aria-labelledby="list-title">
+            <div className="section-heading"><p className="kicker">Current routing</p><h2 id="list-title">Forwarders</h2></div>
+            <div className="empty-state"><p>No MXroute domains are available.</p><p>Check the server configuration, then refresh.</p></div>
+          </section>
+        )}
+      </main>
+    </>
   );
 }
