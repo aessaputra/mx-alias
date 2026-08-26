@@ -15,9 +15,9 @@ export function ForwarderList({ forwarders, domain }: Readonly<{ forwarders: For
   const dialog = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
-    if (!state.ok || !state.message) return;
+    if (!state?.ok || !state?.message) return;
     dialog.current?.close();
-  }, [state.ok, state.message]);
+  }, [state]);
 
   async function copy(address: string) {
     try {
