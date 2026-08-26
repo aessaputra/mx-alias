@@ -33,10 +33,19 @@ describe("destination validation", () => {
     });
   });
 
-  it.each(["not-an-address", ":fail:", ":blackhole:", "a@b.test\nBcc:x@y.test"])(
-    "rejects invalid destination %j",
-    (value) => expect(validateDestination(value).ok).toBe(false),
-  );
+  it.each([
+    "not-an-address",
+    ":fail:",
+    ":blackhole:",
+    "a@b.test\nBcc:x@y.test",
+    "\nuser@example.test",
+    "user@example.test\r",
+    ".user@example.test",
+    "user.@example.test",
+    "user..name@example.test",
+  ])("rejects invalid destination %j", (value) => {
+    expect(validateDestination(value).ok).toBe(false);
+  });
 
   it("rejects destinations over 254 characters", () => {
     expect(validateDestination(`${"a".repeat(244)}@example.test`).ok).toBe(false);

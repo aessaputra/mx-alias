@@ -16,11 +16,11 @@ export function validateAlias(value: string): ValidationResult {
 
 export function validateDestination(value: string): ValidationResult {
   const destination = value.trim();
-  const validAddress = /^[^\s@<>:,]+@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i;
+  const validAddress = /^[^\s@<>:,.]+(?:\.[^\s@<>:,.]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i;
 
   if (
     destination.length > 254 ||
-    /[\x00-\x1f\x7f]/.test(destination) ||
+    /[\x00-\x1f\x7f]/.test(value) ||
     destination === ":fail:" ||
     destination === ":blackhole:" ||
     !validAddress.test(destination)
