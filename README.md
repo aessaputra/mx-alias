@@ -33,6 +33,26 @@ cp .env.example .env   # fill in your values
 
 All five are required. The app refuses to start if any are missing.
 
+### Pocket ID login (optional)
+
+Instead of the password, you can sign in through a [Pocket ID](https://github.com/pocket-id/pocket-id) instance. Create an OIDC client there:
+
+1. Name the client (e.g. `MX Alias`).
+2. Set the callback URL to `https://<your-domain>/api/auth/callback`.
+3. **Enable PKCE** on the client.
+4. Copy the **Client ID** and **Client Secret**.
+
+Then set all four variables in `.env` — they must be set together:
+
+| Variable | Description |
+|---|---|
+| `OIDC_ISSUER_URL` | Pocket ID base URL (e.g. `https://pid.example.com`) |
+| `OIDC_CLIENT_ID` | Client ID from the Pocket ID client |
+| `OIDC_CLIENT_SECRET` | Client Secret from the Pocket ID client |
+| `OIDC_ALLOWED_EMAIL` | Your Pocket ID login email |
+
+Leave all four empty to disable; password login still works either way.
+
 ## Local Development
 
 ```bash
