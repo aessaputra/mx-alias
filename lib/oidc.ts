@@ -110,3 +110,7 @@ export async function fetchUserEmail(
   if (typeof record.email !== "string" || !record.email) throw new OidcError("OIDC userinfo has no email");
   return { email: record.email, verified: record.email_verified !== false };
 }
+
+export function isEmailAllowed(actual: string, allowed: string): boolean {
+  return actual.toLowerCase() === allowed.toLowerCase();
+}
