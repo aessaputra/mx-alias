@@ -538,6 +538,22 @@ dialog code {
   max-width: 340px;
 }
 
+.login-divider {
+  margin: 0;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* Anchor rendered as a button: drop link underline, center label. */
+a.secondary-button {
+  text-decoration: none;
+  text-align: center;
+}
+
 /* Industrial print system */
 body {
   overflow-x: hidden;
