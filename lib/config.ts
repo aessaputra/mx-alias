@@ -11,6 +11,7 @@ export type AppConfig = Readonly<{
   mxrouteApiKey: string;
   adminPassword: string;
   sessionSecret: string;
+  disallowedDomains: readonly string[];
   oidc: OidcConfig | null;
 }>;
 
@@ -65,5 +66,12 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     };
   }
 
-  return Object.freeze({ ...config, oidc });
+  const disallowedDomains = Object.freeze(
+    (env["DISALLOWED_DOMAINS"] ?? "")
+      .split(",")
+      .map((domain) => domain.trim().toLowerCase())
+      .filter((domain) => domain.length > 0),
+  );
+
+  return Object.freeze({ ...config, disallowedDomains, oidc });
 }

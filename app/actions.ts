@@ -20,16 +20,20 @@ import { createSessionToken, verifySessionToken } from "@/lib/session";
 
 const SESSION_COOKIE = "mx_alias_session";
 
-const dependencies = (): ActionDependencies => ({
-  adminPassword: loadConfig().adminPassword,
+const dependencies = (): ActionDependencies => {
+  const config = loadConfig();
+  return {
+  adminPassword: config.adminPassword,
   comparePassword,
   createSessionToken,
   verifySessionToken,
   assertSameOrigin,
   listDomains,
+  disallowedDomains: config.disallowedDomains,
   createForwarder,
   deleteForwarder,
-});
+  };
+};
 
 export async function loginAction(_state: ActionState, formData: FormData): Promise<ActionState> {
   const result = await login(formData, dependencies());

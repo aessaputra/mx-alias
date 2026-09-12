@@ -5,6 +5,7 @@ import { logoutAction } from "@/app/actions";
 import Link from "next/link";
 import { AliasForm } from "@/components/alias-form";
 import { ForwarderList } from "@/components/forwarder-list";
+import { loadConfig } from "@/lib/config";
 import { listDomains, listForwarders } from "@/lib/mxroute";
 import { verifySessionToken } from "@/lib/session";
 import { validateDomain } from "@/lib/validation";
@@ -15,7 +16,9 @@ export default async function Home({ searchParams }: PageProps) {
   const token = (await cookies()).get("mx_alias_session")?.value;
   if (!token || !verifySessionToken(token)) redirect("/login");
 
-  const domains = await listDomains();
+  // ponytail: exact lowercase match only, no wildcard/subdomain support. Upgrade to glob when needed.
+  const disallowed = new Set(loadConfig().disallowedDomains.map((domain) => domain.toLowerCase()));
+  const domains = (await listDomains()).filter((domain) => !disallowed.has(domain.toLowerCase()));
   const requested = (await searchParams).domain;
   const selected = requested ? validateDomain(requested, domains) : undefined;
   const selectedDomain = selected?.ok ? selected.value : domains[0];

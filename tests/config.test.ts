@@ -24,6 +24,15 @@ describe("loadConfig", () => {
     expect(config.oidc).toBeNull();
   });
 
+  it("defaults disallowed domains to empty", () => {
+    expect(loadConfig(validEnv()).disallowedDomains).toEqual([]);
+  });
+
+  it("parses disallowed domains case-insensitively and skips blanks", () => {
+    const config = loadConfig(validEnv({ DISALLOWED_DOMAINS: " Example.COM ,, internal.test " }));
+    expect(config.disallowedDomains).toEqual(["example.com", "internal.test"]);
+  });
+
   it("rejects partial OIDC configuration", () => {
     expect(() =>
       loadConfig(validEnv({ OIDC_ISSUER_URL: "https://id.example.test" })),

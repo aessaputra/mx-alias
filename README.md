@@ -33,6 +33,8 @@ cp .env.example .env   # fill in your values
 
 All five are required. The app refuses to start if any are missing.
 
+Optional: set `DISALLOWED_DOMAINS` to a comma-separated list of domains that cannot be used as forwarders (e.g. `DISALLOWED_DOMAINS=example.com,internal.test`). Disallowed domains are hidden from the UI and rejected server-side. Leave empty to allow all domains.
+
 ### Pocket ID login (optional)
 
 Instead of the password, you can sign in through a [Pocket ID](https://github.com/pocket-id/pocket-id) instance. Create an OIDC client there:

@@ -20,6 +20,7 @@ export type AuthDeps = Readonly<{
 
 export type ForwarderDeps = Readonly<{
   listDomains: () => Promise<string[]>;
+  disallowedDomains: readonly string[];
   createForwarder: (domain: string, alias: string, destination: string) => Promise<void>;
   deleteForwarder: (domain: string, alias: string) => Promise<void>;
 }>;
@@ -58,8 +59,14 @@ export function generateAlias(token: string | undefined, deps: ActionDependencie
   return denied ?? { ok: true, message: "Alias generated", alias: createGeneratedAlias() };
 }
 
+async function allowedDomains(deps: ForwarderDeps): Promise<string[]> {
+  // ponytail: exact lowercase match only, no wildcard/subdomain support. Upgrade to glob when needed.
+  const disallowed = new Set(deps.disallowedDomains.map((domain) => domain.toLowerCase()));
+  return (await deps.listDomains()).filter((domain) => !disallowed.has(domain.toLowerCase()));
+}
+
 async function parseAliasForm(formData: FormData, deps: ForwarderDeps): Promise<ParsedAliasForm> {
-  const domain = validateDomain(String(formData.get("domain") ?? ""), await deps.listDomains());
+  const domain = validateDomain(String(formData.get("domain") ?? ""), await allowedDomains(deps));
   if (!domain.ok) return { kind: "error" as const, ok: false, message: domain.message };
   const alias = validateAlias(String(formData.get("alias") ?? ""));
   if (!alias.ok) return { kind: "error" as const, ok: false, message: alias.message };

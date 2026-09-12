@@ -21,6 +21,7 @@ const deps = (overrides: Partial<ActionDependencies> = {}): ActionDependencies =
   verifySessionToken: (token) => token === "valid",
   assertSameOrigin: () => undefined,
   listDomains: async () => ["example.com"],
+  disallowedDomains: [],
   createForwarder: vi.fn(async () => undefined),
   deleteForwarder: vi.fn(async () => undefined),
   ...overrides,
@@ -61,6 +62,23 @@ describe("action core handlers", () => {
 
   it("rejects a domain absent from the refreshed domain list", async () => {
     expect(await createAlias(form({ domain: "stale.example", alias: "test", destination: "to@example.net" }), "valid", new Headers(), deps())).toEqual({ ok: false, message: "Domain is not allowed" });
+  });
+
+  it.each([createAlias, deleteAlias])("rejects a disallowed domain without calling MXroute", async (handler) => {
+    const createForwarder = vi.fn(async () => undefined);
+    const deleteForwarder = vi.fn(async () => undefined);
+    const dependencies = deps({
+      listDomains: async () => ["example.com", "blocked.test"],
+      disallowedDomains: ["blocked.test"],
+      createForwarder,
+      deleteForwarder,
+    });
+    const values: Record<string, string> = handler === createAlias
+      ? { domain: "blocked.test", alias: "test", destination: "to@example.net" }
+      : { domain: "blocked.test", alias: "test" };
+    expect(await handler(form(values), "valid", new Headers(), dependencies)).toEqual({ ok: false, message: "Domain is not allowed" });
+    expect(createForwarder).not.toHaveBeenCalled();
+    expect(deleteForwarder).not.toHaveBeenCalled();
   });
 
   it("creates with exactly one validated destination", async () => {
