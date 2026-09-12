@@ -40,3 +40,12 @@ export function validateDomain(
     ? { ok: true, value: domain }
     : invalid("Domain is not allowed");
 }
+
+// ponytail: exact lowercase match only, no wildcard/subdomain support. Upgrade to glob when needed.
+export function filterDisallowed(
+  domains: readonly string[],
+  disallowed: readonly string[],
+): string[] {
+  const denied = new Set(disallowed.map((domain) => domain.toLowerCase()));
+  return domains.filter((domain) => !denied.has(domain.toLowerCase()));
+}

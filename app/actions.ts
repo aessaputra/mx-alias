@@ -23,15 +23,15 @@ const SESSION_COOKIE = "mx_alias_session";
 const dependencies = (): ActionDependencies => {
   const config = loadConfig();
   return {
-  adminPassword: config.adminPassword,
+    adminPassword: config.adminPassword,
   comparePassword,
   createSessionToken,
   verifySessionToken,
   assertSameOrigin,
-  listDomains,
-  disallowedDomains: config.disallowedDomains,
-  createForwarder,
-  deleteForwarder,
+    listDomains,
+    disallowedDomains: config.disallowedDomains,
+    createForwarder,
+    deleteForwarder,
   };
 };
 

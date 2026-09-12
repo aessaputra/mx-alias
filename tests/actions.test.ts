@@ -64,21 +64,30 @@ describe("action core handlers", () => {
     expect(await createAlias(form({ domain: "stale.example", alias: "test", destination: "to@example.net" }), "valid", new Headers(), deps())).toEqual({ ok: false, message: "Domain is not allowed" });
   });
 
-  it.each([createAlias, deleteAlias])("rejects a disallowed domain without calling MXroute", async (handler) => {
+  it("rejects a disallowed domain on create without calling MXroute", async () => {
     const createForwarder = vi.fn(async () => undefined);
+    const dependencies = deps({
+      listDomains: async () => ["example.com", "denied.test"],
+      disallowedDomains: ["denied.test"],
+      createForwarder,
+    });
+    expect(
+      await createAlias(form({ domain: "denied.test", alias: "test", destination: "to@example.net" }), "valid", new Headers(), dependencies),
+    ).toEqual({ ok: false, message: "Domain is not allowed" });
+    expect(createForwarder).not.toHaveBeenCalled();
+  });
+
+  it("still deletes an alias on a disallowed domain", async () => {
     const deleteForwarder = vi.fn(async () => undefined);
     const dependencies = deps({
-      listDomains: async () => ["example.com", "blocked.test"],
-      disallowedDomains: ["blocked.test"],
-      createForwarder,
+      listDomains: async () => ["example.com", "denied.test"],
+      disallowedDomains: ["denied.test"],
       deleteForwarder,
     });
-    const values: Record<string, string> = handler === createAlias
-      ? { domain: "blocked.test", alias: "test", destination: "to@example.net" }
-      : { domain: "blocked.test", alias: "test" };
-    expect(await handler(form(values), "valid", new Headers(), dependencies)).toEqual({ ok: false, message: "Domain is not allowed" });
-    expect(createForwarder).not.toHaveBeenCalled();
-    expect(deleteForwarder).not.toHaveBeenCalled();
+    expect(
+      await deleteAlias(form({ domain: "denied.test", alias: "test" }), "valid", new Headers(), dependencies),
+    ).toEqual({ ok: true, message: "Alias deleted" });
+    expect(deleteForwarder).toHaveBeenCalledWith("denied.test", "test");
   });
 
   it("creates with exactly one validated destination", async () => {

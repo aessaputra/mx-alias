@@ -1,7 +1,7 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 
 import { generateAlias as createGeneratedAlias } from "@/lib/generator";
-import { validateAlias, validateDestination, validateDomain } from "@/lib/validation";
+import { filterDisallowed, validateAlias, validateDestination, validateDomain } from "@/lib/validation";
 
 export type ActionState = { ok: boolean; message: string };
 type LoginResult = ActionState | { ok: true; token: string };
@@ -59,14 +59,11 @@ export function generateAlias(token: string | undefined, deps: ActionDependencie
   return denied ?? { ok: true, message: "Alias generated", alias: createGeneratedAlias() };
 }
 
-async function allowedDomains(deps: ForwarderDeps): Promise<string[]> {
-  // ponytail: exact lowercase match only, no wildcard/subdomain support. Upgrade to glob when needed.
-  const disallowed = new Set(deps.disallowedDomains.map((domain) => domain.toLowerCase()));
-  return (await deps.listDomains()).filter((domain) => !disallowed.has(domain.toLowerCase()));
-}
-
-async function parseAliasForm(formData: FormData, deps: ForwarderDeps): Promise<ParsedAliasForm> {
-  const domain = validateDomain(String(formData.get("domain") ?? ""), await allowedDomains(deps));
+async function parseAliasForm(
+  formData: FormData,
+  domains: readonly string[],
+): Promise<ParsedAliasForm> {
+  const domain = validateDomain(String(formData.get("domain") ?? ""), domains);
   if (!domain.ok) return { kind: "error" as const, ok: false, message: domain.message };
   const alias = validateAlias(String(formData.get("alias") ?? ""));
   if (!alias.ok) return { kind: "error" as const, ok: false, message: alias.message };
@@ -78,7 +75,10 @@ export async function createAlias(formData: FormData, token: string | undefined,
   if (denied) return denied;
 
   try {
-    const parsed = await parseAliasForm(formData, deps);
+    const parsed = await parseAliasForm(
+      formData,
+      filterDisallowed(await deps.listDomains(), deps.disallowedDomains),
+    );
     if (!parsed.ok) return { ok: parsed.ok, message: parsed.message };
     const destination = validateDestination(String(formData.get("destination") ?? ""));
     if (!destination.ok) return destination;
@@ -94,7 +94,7 @@ export async function deleteAlias(formData: FormData, token: string | undefined,
   if (denied) return denied;
 
   try {
-    const parsed = await parseAliasForm(formData, deps);
+    const parsed = await parseAliasForm(formData, await deps.listDomains());
     if (!parsed.ok) return { ok: parsed.ok, message: parsed.message };
     await deps.deleteForwarder(parsed.domain, parsed.alias);
     return { ok: true, message: "Alias deleted" };

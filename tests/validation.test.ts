@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  filterDisallowed,
   normalizeAlias,
   validateAlias,
   validateDestination,
@@ -62,5 +63,15 @@ describe("domain validation", () => {
 
   it("rejects a domain outside the allowed list", () => {
     expect(validateDomain("other.test", ["example.test"]).ok).toBe(false);
+  });
+});
+
+describe("filterDisallowed", () => {
+  it("removes disallowed domains case-insensitively", () => {
+    expect(filterDisallowed(["Example.Test", "ok.test"], ["example.test"])).toEqual(["ok.test"]);
+  });
+
+  it("returns all domains when the disallowed list is empty", () => {
+    expect(filterDisallowed(["a.test", "b.test"], [])).toEqual(["a.test", "b.test"]);
   });
 });
