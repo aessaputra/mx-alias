@@ -15,7 +15,5 @@ playwright-report/
 AGENTS.md
 CLAUDE.md
 skills-lock.json
-docs/superpowers/
-.superpowers/
 .worktrees/
 .vercel
