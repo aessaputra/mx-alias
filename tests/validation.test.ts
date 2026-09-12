@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   filterDisallowed,
   normalizeAlias,
+  resolveActiveDomain,
   validateAlias,
   validateDestination,
   validateDomain,
@@ -73,5 +74,17 @@ describe("filterDisallowed", () => {
 
   it("returns all domains when the disallowed list is empty", () => {
     expect(filterDisallowed(["a.test", "b.test"], [])).toEqual(["a.test", "b.test"]);
+  });
+});
+
+describe("resolveActiveDomain", () => {
+  it("prefers the requested domain when allowed", () => {
+    expect(resolveActiveDomain("Example.Test", ["example.test", "other.test"])).toBe("example.test");
+  });
+
+  it("falls back to the first domain when the request is missing or not allowed", () => {
+    expect(resolveActiveDomain(undefined, ["first.test", "second.test"])).toBe("first.test");
+    expect(resolveActiveDomain("other.test", ["ok.test", "denied.test"])).toBe("ok.test");
+    expect(resolveActiveDomain(undefined, [])).toBeUndefined();
   });
 });

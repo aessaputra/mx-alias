@@ -4,8 +4,8 @@ import {
   MxrouteError,
   createForwarder,
   deleteForwarder,
-  listDomains,
-  listForwarders,
+  fetchDomains,
+  fetchForwarders,
 } from "@/lib/mxroute";
 
 const API_KEY = "secret-api-key";
@@ -36,7 +36,7 @@ describe("MXroute HTTP contract", () => {
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(jsonResponse({ success: true, data: ["example.com"] }));
 
-    await expect(listDomains()).resolves.toEqual(["example.com"]);
+    await expect(fetchDomains()).resolves.toEqual(["example.com"]);
 
     expect(timeoutMock).toHaveBeenCalledWith(10_000);
     const [url, init] = fetchMock.mock.calls[0];
@@ -64,7 +64,7 @@ describe("MXroute HTTP contract", () => {
       }),
     );
 
-    await expect(listForwarders("example.com/a b")).resolves.toEqual([
+    await expect(fetchForwarders("example.com/a b")).resolves.toEqual([
       {
         alias: "sales",
         email: "sales@example.com",
@@ -117,7 +117,7 @@ describe("MXroute error mapping", () => {
       jsonResponse({ success: false, error: { message: `raw ${API_KEY}` } }, status),
     );
 
-    const error = await listDomains().catch((caught: unknown) => caught);
+    const error = await fetchDomains().catch((caught: unknown) => caught);
 
     expect(error).toBeInstanceOf(MxrouteError);
     expect(error).toMatchObject({ kind, status });
@@ -130,7 +130,7 @@ describe("MXroute error mapping", () => {
       jsonResponse({ success: false }, 429, { "Retry-After": "30" }),
     );
 
-    await expect(listDomains()).rejects.toMatchObject({
+    await expect(fetchDomains()).rejects.toMatchObject({
       kind: "rate_limited",
       status: 429,
       retryAfterSeconds: 30,
@@ -142,7 +142,7 @@ describe("MXroute error mapping", () => {
       jsonResponse({ success: false }, 429),
     );
 
-    const error = await listDomains().catch((caught: unknown) => caught);
+    const error = await fetchDomains().catch((caught: unknown) => caught);
 
     expect(error).toMatchObject({ kind: "rate_limited", status: 429 });
     expect(error).not.toHaveProperty("retryAfterSeconds", 0);
@@ -153,7 +153,7 @@ describe("MXroute error mapping", () => {
       jsonResponse({ success: false }, 429, { "Retry-After": "later" }),
     );
 
-    const error = await listDomains().catch((caught: unknown) => caught);
+    const error = await fetchDomains().catch((caught: unknown) => caught);
 
     expect(error).toMatchObject({ kind: "rate_limited", status: 429 });
     expect(error).not.toHaveProperty("retryAfterSeconds", expect.any(Number));
@@ -164,7 +164,7 @@ describe("MXroute error mapping", () => {
       new Response(`not-json ${API_KEY}`, { status: 200 }),
     );
 
-    const error = await listDomains().catch((caught: unknown) => caught);
+    const error = await fetchDomains().catch((caught: unknown) => caught);
 
     expect(error).toMatchObject({ kind: "invalid_response", status: 200 });
     expect((error as Error).message).not.toContain(API_KEY);
@@ -175,7 +175,7 @@ describe("MXroute error mapping", () => {
       jsonResponse({ success: true, data: [42] }),
     );
 
-    await expect(listDomains()).rejects.toMatchObject({
+    await expect(fetchDomains()).rejects.toMatchObject({
       kind: "invalid_response",
       status: 200,
     });
@@ -186,7 +186,7 @@ describe("MXroute error mapping", () => {
       new DOMException(`timed out ${API_KEY}`, "AbortError"),
     );
 
-    const error = await listDomains().catch((caught: unknown) => caught);
+    const error = await fetchDomains().catch((caught: unknown) => caught);
 
     expect(error).toMatchObject({ kind: "timeout" });
     expect((error as Error).message).not.toContain(API_KEY);
@@ -197,7 +197,7 @@ describe("MXroute error mapping", () => {
       new DOMException(`timed out ${API_KEY}`, "TimeoutError"),
     );
 
-    const error = await listDomains().catch((caught: unknown) => caught);
+    const error = await fetchDomains().catch((caught: unknown) => caught);
 
     expect(error).toMatchObject({ kind: "timeout" });
     expect((error as Error).message).not.toContain(API_KEY);

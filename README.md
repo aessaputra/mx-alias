@@ -118,4 +118,6 @@ npm run lint && npm run typecheck && npm test && npm run build
 
 Authentication is password-based with HMAC-signed tokens stored in `httpOnly` cookies. Origin validation protects against CSRF. Input is validated server-side before any MXroute API call.
 
+Read-only MXroute data is cached server-side with `unstable_cache`: domain list for 5 minutes, forwarder list per domain for 60 seconds. Only validated responses are cached; errors are never stored. Writes go straight to MXroute, then invalidate only the touched domain's forwarder tag plus the dashboard path. The Refresh button force-reloads the domain list and the active domain's forwarders through a session- and origin-checked Server Action with a 15-second server-side cooldown. Changes made directly in the MXroute panel appear after the TTL expires or a manual Refresh. Tune the TTL constants in `lib/mxroute.ts` (`DOMAINS_TTL_SECONDS`, `FORWARDERS_TTL_SECONDS`) based on request volume vs freshness needs. Caching is per application instance — evaluate a shared cache if deploying multiple instances.
+
 A reverse proxy is required in production — the session cookie uses `Secure` and browsers will not send it over plain HTTP.

@@ -1,7 +1,10 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 
 import { generateAlias as createGeneratedAlias } from "@/lib/generator";
-import { filterDisallowed, validateAlias, validateDestination, validateDomain } from "@/lib/validation";
+import { MxrouteError } from "@/lib/mxroute";
+import { filterDisallowed, resolveActiveDomain, validateAlias, validateDestination, validateDomain } from "@/lib/validation";
+
+export const REFRESH_COOLDOWN_MS = 15_000;
 
 export type ActionState = { ok: boolean; message: string };
 type LoginResult = ActionState | { ok: true; token: string };
@@ -24,6 +27,46 @@ export type ForwarderDeps = Readonly<{
   createForwarder: (domain: string, alias: string, destination: string) => Promise<void>;
   deleteForwarder: (domain: string, alias: string) => Promise<void>;
 }>;
+
+export type RefreshDeps = Readonly<{
+  listDomains: () => Promise<string[]>;
+  invalidateDomain: (domain: string) => void;
+  invalidateDomains: () => void;
+  now?: () => number;
+  lastRefreshAt?: () => number | undefined;
+  recordRefresh?: (at: number) => void;
+}>;
+
+export async function refreshDashboard(
+  domain: string | undefined,
+  token: string | undefined,
+  requestHeaders: Headers,
+  deps: ActionDependencies & RefreshDeps,
+): Promise<ActionState> {
+  const denied = authorize(token, requestHeaders, deps);
+  if (denied) return denied;
+
+  const now = deps.now?.() ?? Date.now();
+  const lastRefresh = deps.lastRefreshAt?.();
+  if (lastRefresh !== undefined && now - lastRefresh < REFRESH_COOLDOWN_MS) {
+    return { ok: false, message: "Refresh is on cooldown. Try again shortly." };
+  }
+
+  try {
+    const domains = filterDisallowed(await deps.listDomains(), deps.disallowedDomains);
+    deps.invalidateDomains();
+    const activeDomain = resolveActiveDomain(domain, domains);
+    if (activeDomain) deps.invalidateDomain(activeDomain);
+    deps.recordRefresh?.(now);
+    return { ok: true, message: "Dashboard refreshed" };
+  } catch (error) {
+    console.error("refreshDashboard failed", error);
+    if (error instanceof MxrouteError && error.kind === "rate_limited") {
+      return { ok: false, message: "MXroute rate limit exceeded. Try again later." };
+    }
+    return { ok: false, message: "Unable to refresh. Showing cached data." };
+  }
+}
 
 export type ActionDependencies = AuthDeps & ForwarderDeps;
 

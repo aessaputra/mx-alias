@@ -49,3 +49,11 @@ export function filterDisallowed(
   const denied = new Set(disallowed.map((domain) => domain.toLowerCase()));
   return domains.filter((domain) => !denied.has(domain.toLowerCase()));
 }
+
+export function resolveActiveDomain(
+  requested: string | undefined,
+  domains: readonly string[],
+): string | undefined {
+  const selected = requested ? validateDomain(requested, domains) : undefined;
+  return selected?.ok ? selected.value : domains[0];
+}

@@ -113,6 +113,15 @@ test.describe("alias lifecycle", () => {
     await expect(page.locator("table").getByText("del-test@example.com")).not.toBeVisible();
   });
 
+  test("refresh button reloads dashboard data", async ({ page }) => {
+    await login(page);
+    await expect(page.getByRole("button", { name: "Refresh" })).toBeVisible();
+    await page.getByRole("button", { name: "Refresh" }).click();
+    await expect(page.getByRole("button", { name: "Refresh" })).toBeEnabled();
+    await expect(page.getByRole("heading", { name: "Create an alias" })).toBeVisible();
+    await expect(page.getByText("02 / Current routing")).toBeVisible();
+  });
+
   test("logout and unauthenticated redirect", async ({ page }) => {
     await login(page);
     await page.getByRole("button", { name: "Log out" }).click();

@@ -1,5 +1,16 @@
+import { unstable_cache } from "next/cache";
+
 import { loadConfig } from "@/lib/config";
 import type { Forwarder, MxrouteErrorKind } from "@/lib/types";
+
+export const MX_DOMAINS_TAG = "mx-domains";
+export const MX_FORWARDERS_TAG = "mx-forwarders";
+// ponytail: fixed TTLs for a single instance. Make configurable via env when traffic patterns demand it.
+export const DOMAINS_TTL_SECONDS = 300;
+export const FORWARDERS_TTL_SECONDS = 60;
+
+export const forwarderTag = (domain: string): string =>
+  `${MX_FORWARDERS_TAG}:${domain.toLowerCase()}`;
 
 const BASE_URL = process.env.MXROUTE_BASE_URL || "https://api.mxroute.com";
 
@@ -101,7 +112,7 @@ const responseData = (value: unknown): unknown => {
   return value.data;
 };
 
-export function listDomains(): Promise<string[]> {
+export function fetchDomains(): Promise<string[]> {
   return request("/domains", { method: "GET" }, (value) => {
     const data = responseData(value);
     if (!Array.isArray(data) || !data.every((domain) => typeof domain === "string")) {
@@ -111,7 +122,7 @@ export function listDomains(): Promise<string[]> {
   });
 }
 
-export function listForwarders(domain: string): Promise<Forwarder[]> {
+export function fetchForwarders(domain: string): Promise<Forwarder[]> {
   return request(
     `/domains/${encodeURIComponent(domain)}/forwarders`,
     { method: "GET" },
@@ -123,6 +134,27 @@ export function listForwarders(domain: string): Promise<Forwarder[]> {
       return data;
     },
   );
+}
+
+const cacheKeyParts = (): [string, string, string] => {
+  const config = loadConfig();
+  return [config.mxrouteServer, config.mxrouteUsername, config.mxrouteApiKey];
+};
+
+export function listDomains(): Promise<string[]> {
+  const keyParts = cacheKeyParts();
+  return unstable_cache(fetchDomains, ["mx-domains", ...keyParts], {
+    tags: [MX_DOMAINS_TAG],
+    revalidate: DOMAINS_TTL_SECONDS,
+  })();
+}
+
+export function listForwarders(domain: string): Promise<Forwarder[]> {
+  const normalized = domain.toLowerCase();
+  return unstable_cache(fetchForwarders, ["mx-forwarders", ...cacheKeyParts(), normalized], {
+    tags: [forwarderTag(normalized)],
+    revalidate: FORWARDERS_TTL_SECONDS,
+  })(normalized);
 }
 
 export function createForwarder(

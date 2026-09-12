@@ -5,10 +5,11 @@ import { logoutAction } from "@/app/actions";
 import Link from "next/link";
 import { AliasForm } from "@/components/alias-form";
 import { ForwarderList } from "@/components/forwarder-list";
+import { RefreshButton } from "@/components/refresh-button";
 import { loadConfig } from "@/lib/config";
 import { listDomains, listForwarders } from "@/lib/mxroute";
 import { verifySessionToken } from "@/lib/session";
-import { filterDisallowed, validateDomain } from "@/lib/validation";
+import { filterDisallowed, resolveActiveDomain } from "@/lib/validation";
 
 type PageProps = { searchParams: Promise<{ domain?: string }> };
 
@@ -17,9 +18,7 @@ export default async function Home({ searchParams }: PageProps) {
   if (!token || !verifySessionToken(token)) redirect("/login");
 
   const domains = filterDisallowed(await listDomains(), loadConfig().disallowedDomains);
-  const requested = (await searchParams).domain;
-  const selected = requested ? validateDomain(requested, domains) : undefined;
-  const selectedDomain = selected?.ok ? selected.value : domains[0];
+  const selectedDomain = resolveActiveDomain((await searchParams).domain, domains);
   const forwarders = selectedDomain ? await listForwarders(selectedDomain) : [];
 
   return (
@@ -27,7 +26,7 @@ export default async function Home({ searchParams }: PageProps) {
       <header className="site-header">
         <Link className="brand" href="/">MX Alias</Link>
         <nav aria-label="Dashboard controls">
-          <a href={selectedDomain ? `/?domain=${encodeURIComponent(selectedDomain)}` : "/"}>Refresh</a>
+          <RefreshButton domain={selectedDomain} />
           <form action={logoutAction}><button className="text-button" type="submit">Log out</button></form>
         </nav>
       </header>

@@ -119,6 +119,16 @@ a:hover {
   margin: 0;
 }
 
+.refresh-form {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.refresh-form .field-error {
+  max-width: 32ch;
+}
+
 /* Dashboard grid */
 .dashboard {
   display: grid;
