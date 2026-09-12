@@ -27,7 +27,6 @@ export default async function Home({ searchParams }: PageProps) {
       <header className="site-header">
         <Link className="brand" href="/">MX Alias</Link>
         <nav aria-label="Dashboard controls">
-          {selectedDomain ? <code>{selectedDomain}</code> : <span>No domain</span>}
           <a href={selectedDomain ? `/?domain=${encodeURIComponent(selectedDomain)}` : "/"}>Refresh</a>
           <form action={logoutAction}><button className="text-button" type="submit">Log out</button></form>
         </nav>
