@@ -11,16 +11,18 @@ export function RefreshButton({ domain }: Readonly<{ domain?: string }>) {
   const [state, action, pending] = useActionState(refreshDashboardAction, initialState);
 
   return (
-    <form action={action} className="refresh-form">
-      <input type="hidden" name="domain" value={domain ?? ""} />
-      <button className="text-button" type="submit" disabled={pending}>
-        {pending ? "Refreshing..." : "Refresh"}
-      </button>
+    <div className="refresh-wrap">
+      <form action={action} className="refresh-form">
+        <input type="hidden" name="domain" value={domain ?? ""} />
+        <button className="text-button" type="submit" disabled={pending}>
+          {pending ? "Refreshing..." : "Refresh"}
+        </button>
+      </form>
       {state.message && !state.ok ? (
-        <span className="field-error" role="alert">
+        <p className="refresh-error" role="alert">
           {state.message}
-        </span>
+        </p>
       ) : null}
-    </form>
+    </div>
   );
 }

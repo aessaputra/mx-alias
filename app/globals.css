@@ -119,14 +119,30 @@ a:hover {
   margin: 0;
 }
 
+.refresh-wrap {
+  position: relative;
+}
+
 .refresh-form {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.refresh-form .field-error {
-  max-width: 32ch;
+.refresh-error {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  z-index: 10;
+  margin: 0;
+  padding: 0.6rem 0.75rem;
+  max-width: 30ch;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--canvas);
+  background: var(--text);
+  border: 1px solid var(--divider);
+  white-space: normal;
 }
 
 /* Dashboard grid */
