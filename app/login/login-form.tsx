@@ -37,12 +37,12 @@ export default function LoginForm({
           </button>
           {!state.ok && state.message ? <p className="field-error" role="alert">{state.message}</p> : null}
           {error === "oidc" ? (
-            <p className="field-error" role="alert">Pocket ID sign-in failed. Try again or use your password.</p>
+            <p className="field-error" role="alert">OIDC sign-in failed. Try again or use your password.</p>
           ) : null}
           {oidcEnabled ? (
             <>
               <p className="login-divider">or</p>
-              <a className="secondary-button" href="/api/auth/pocketid">Sign in with Pocket ID</a>
+              <a className="secondary-button" href="/api/auth/oidc">Sign in with OIDC</a>
             </>
           ) : null}
         </form>
