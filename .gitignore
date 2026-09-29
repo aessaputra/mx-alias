@@ -11,11 +11,8 @@ npm-debug.log*
 test-results/
 playwright-report/
 .agents/
-.claude/
 AGENTS.md
 CLAUDE.md
 skills-lock.json
-docs/superpowers/
-.superpowers/
 .worktrees/
 .vercel
