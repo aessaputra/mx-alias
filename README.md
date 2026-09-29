@@ -1,43 +1,44 @@
 # MX Alias
 
-Self-hosted email alias manager for [MXroute](https://mxroute.com/). Create and delete forwarding aliases from a password-protected web UI.
+Self-hosted email alias manager for [MXroute](https://mxroute.com/). Create, generate, copy, and delete forwarding aliases in a web UI with password or optional OIDC login.
+
+![MX Alias dashboard showing alias creation and forwarders](public/v-i1Pvg89J-700.webp)
 
 ![Node.js](https://img.shields.io/badge/Node.js-24-3c873a?style=flat-square&logo=node.js&logoColor=white)
 ![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=next.js&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61dafb?style=flat-square&logo=react&logoColor=black)
 
-No database — all aliases live on MXroute's side. The app is a thin, stateless UI over the MXroute API.
+No application database: MXroute stores the aliases. The app keeps a temporary read cache and refresh cooldown in memory.
 
 ## Prerequisites
 
 - **Node.js 24** (`>=24 <25`, enforced in `package.json` engines)
 - **MXroute account** with API access (server, username, API key)
-- A reverse proxy (Caddy, Nginx, etc.) for HTTPS — the session cookie requires `Secure`
+- HTTPS through a reverse proxy (Caddy, Nginx, etc.) in production; session cookies use `Secure` there
 
 ## Getting Started
 
-Generate a session secret and create `.env`:
+Create `.env` from the template. Generate a secret with `openssl rand -hex 32` and set it as `SESSION_SECRET`:
 
 ```bash
-openssl rand -hex 32
-cp .env.example .env   # fill in your values
+cp .env.example .env
 ```
 
 | Variable | Description |
 |---|---|
-| `MXROUTE_SERVER` | MXroute API host (e.g. `https://api.mxroute.com`) |
+| `MXROUTE_SERVER` | MXroute server value from your account, sent as the `X-Server` API header (not a URL) |
 | `MXROUTE_USERNAME` | MXroute account username |
 | `MXROUTE_API_KEY` | MXroute API key |
 | `ADMIN_PASSWORD` | Password for the web UI login |
 | `SESSION_SECRET` | Random string ≥ 32 chars |
 
-All five are required. The app refuses to start if any are missing.
+All five are required at runtime. The MXroute API URL is `https://api.mxroute.com` by default; `MXROUTE_BASE_URL` overrides it for testing.
 
 Optional: set `DISALLOWED_DOMAINS` to a comma-separated list of domains that cannot be used as forwarders (e.g. `DISALLOWED_DOMAINS=example.com,internal.test`). Disallowed domains are hidden from the UI and rejected server-side. Leave empty to allow all domains.
 
 ### OIDC login (optional)
 
-Instead of the password, you can sign in through any OIDC provider (e.g. [Pocket ID](https://github.com/pocket-id/pocket-id)). Create an OIDC client there:
+You can also sign in through an OIDC provider (e.g. [Pocket ID](https://github.com/pocket-id/pocket-id)). Create an OIDC client there:
 
 1. Name the client (e.g. `MX Alias`).
 2. Set the callback URL to `https://<your-domain>/api/auth/callback`.
@@ -66,12 +67,14 @@ Open <http://localhost:3000>.
 
 ## Docker
 
-Build and run with Compose:
+Build and run with Compose after filling in `.env` as described above:
 
 ```bash
-cp .env.example .env   # fill in your values
 docker compose up -d
 ```
+
+> [!NOTE]
+> `docker-compose.yml` passes only the five required variables. To use `DISALLOWED_DOMAINS` or OIDC with Compose, add those variables to the service's `environment` block.
 
 Or build and run manually:
 
@@ -80,7 +83,7 @@ docker build -t mx-alias .
 
 docker run -d \
   -p 3000:3000 \
-  -e MXROUTE_SERVER=https://api.mxroute.com \
+  -e MXROUTE_SERVER=your-mxroute-server \
   -e MXROUTE_USERNAME=your-username \
   -e MXROUTE_API_KEY=your-api-key \
   -e ADMIN_PASSWORD=your-password \
@@ -106,18 +109,20 @@ Full local gate in one shot:
 npm run lint && npm run typecheck && npm test && npm run build
 ```
 
-> [!CAUTION]
-> The Playwright e2e suite uses a mock API. Running it against a real MXroute account will create and delete forwarding aliases. Only test with a disposable domain.
+> [!NOTE]
+> The Playwright E2E suite starts its own mock MXroute API and app using the settings in `playwright.config.ts`; it does not need a real MXroute account.
 
 ## Architecture
+
+![MX Alias architecture: browser, Next.js app, optional OIDC login, and MXroute API](public/architecture.svg)
 
 - `app/` — Next.js App Router: pages, server actions, health endpoint
 - `components/` — Client components (alias form, forwarder list)
 - `lib/` — Business logic: MXroute API client, validation, session handling, security
 - `tests/` — Unit and E2E tests
 
-Authentication is password-based with HMAC-signed tokens stored in `httpOnly` cookies. Origin validation protects against CSRF. Input is validated server-side before any MXroute API call.
+Password and optional OIDC login both issue HMAC-signed session tokens in `httpOnly` cookies. Mutating actions check the session, request origin, and input before calling MXroute.
 
-Read-only MXroute data is cached server-side with `unstable_cache`: domain list for 5 minutes, forwarder list per domain for 60 seconds. Only validated responses are cached; errors are never stored. Writes go straight to MXroute, then invalidate only the touched domain's forwarder tag plus the dashboard path. The Refresh button force-reloads the domain list and the active domain's forwarders through a session- and origin-checked Server Action with a 15-second server-side cooldown. Changes made directly in the MXroute panel appear after the TTL expires or a manual Refresh. Tune the TTL constants in `lib/mxroute.ts` (`DOMAINS_TTL_SECONDS`, `FORWARDERS_TTL_SECONDS`) based on request volume vs freshness needs. Caching is per application instance — evaluate a shared cache if deploying multiple instances.
+MXroute reads use `unstable_cache`: domains expire after 5 minutes and forwarders after 60 seconds. Successful writes invalidate the affected domain's forwarder cache. Refresh invalidates the domain list and selected domain's forwarders, with a 15-second per-session cooldown. The cache and cooldown are local to each app instance; allow for that if deploying multiple instances.
 
-A reverse proxy is required in production — the session cookie uses `Secure` and browsers will not send it over plain HTTP.
+Production requires HTTPS for the `Secure` session cookie.
